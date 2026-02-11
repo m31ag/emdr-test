@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
-    <title>Animation</title>
+    <title>EMDR Animation</title>
 
     <style>
         body {
@@ -243,6 +243,7 @@
             source.start(0, time, duration);
         }
 
+
         const sounds = [
             { time: 0, dur: 1 },
             { time: 2, dur: 1 },
@@ -282,7 +283,7 @@
         }
 
 
-
+        // canvas
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
         canvas.width = canvas.clientWidth
@@ -373,6 +374,7 @@
             }
 
             if (mode === "vertical") {
+
                 ball.y += speed * dir;
                 if (ball.y + ball.r >= canvas.height && dir > 0) {
                     dir = -1;
