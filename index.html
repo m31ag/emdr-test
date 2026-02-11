@@ -235,11 +235,14 @@
             const panNode = audioCtx.createStereoPanner();
             panNode.pan.value = pan;
 
-            source.connect(panNode).connect(audioCtx.destination);
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
 
-            // start(when, offset, duration)
+            source.connect(panNode).connect(gainNode).connect(audioCtx.destination);
             source.start(0, time, duration);
         }
+
         const sounds = [
             { time: 0, dur: 1 },
             { time: 2, dur: 1 },
