@@ -5,45 +5,90 @@ const colorPreview = document.getElementById("colorPreview");
 let ballColor = colorInput.value;
 
 //audio
+audioFiles = [
+    {
+        src: "classics.mp3",
+        sounds: [
+            { time: 0, dur: 1 },
+            { time: 2, dur: 1 },
+            { time: 4, dur: 1 },
+            { time: 6, dur: 1 },
+            { time: 8, dur: 1 },
+            { time: 10, dur: 1 },
+            { time: 12, dur: 1 },
+            { time: 14, dur: 1 }
+        ]
+    },
+    {
+        src: "drums.mp3",
+        sounds: [
+            { time: 0, dur: 1 },
+            { time: 2, dur: 1 },
+            { time: 4, dur: 1 },
+            { time: 6, dur: 1 },
+            { time: 8, dur: 1 },
+            { time: 10, dur: 1 },
+            { time: 12, dur: 1 },
+            { time: 14, dur: 1 },
+            { time: 16, dur: 1 }
+        ]
+
+    },
+    {
+        src: "bowls.mp3",
+        sounds: [
+            { time: 0, dur: 1 },
+            { time: 2, dur: 1 },
+            { time: 4, dur: 1 },
+            { time: 6, dur: 1 },
+            { time: 8, dur: 1 },
+            { time: 10, dur: 1 },
+            { time: 12, dur: 1 }
+        ]
+
+    }
+]
+
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-let hitBuffer;
+const audioBuffers = []
 
-fetch("classics.mp3")
-    .then(r => r.arrayBuffer())
-    .then(b => audioCtx.decodeAudioData(b))
-    .then(buf => hitBuffer = buf);
+//get mp3 list
+Promise.all(audioFiles.map(f =>
+    fetch(f.src)
+        .then(r => r.arrayBuffer())
+        .then(b => audioCtx.decodeAudioData(b))
+)).then(buffers => {
+    audioBuffers.push(...buffers);
+});
 
-function playFrom(time, duration = 0.2, pan = 0) {
-    if (!hitBuffer) return;
+function playFrom(pan = 0) {
+    if (currentAudio.sound == -1) return
+    const buffer = audioBuffers[currentAudio.file]
+    if (!buffer) return;
+
+    const sound = audioFiles[currentAudio.file].sounds[currentAudio.sound]
 
     const source = audioCtx.createBufferSource();
-    source.buffer = hitBuffer;
+    source.buffer = audioBuffers[currentAudio.file];
 
     const panNode = audioCtx.createStereoPanner();
     panNode.pan.value = pan;
 
+
     const gainNode = audioCtx.createGain();
-    gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + (sound.dur / 2));
 
     source.connect(panNode).connect(gainNode).connect(audioCtx.destination);
-    source.start(0, time, duration);
+    source.start(0, sound.time, sound.dur);
 }
 
 
-const sounds = [
-    { time: 0, dur: 1 },
-    { time: 2, dur: 1 },
-    { time: 4, dur: 1 },
-    { time: 6, dur: 1 },
-    { time: 8, dur: 1 },
-    { time: 10, dur: 1 },
-    { time: 12, dur: 1 },
-    { time: 14, dur: 1 }
-];
-
-let currentSound = -1;
+let currentAudio = {
+    file: 0,
+    sound: -1
+}
 
 document.querySelectorAll('[data-sound]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -52,23 +97,15 @@ document.querySelectorAll('[data-sound]').forEach(btn => {
             .forEach(b => b.classList.remove('active'));
 
         btn.classList.add('active');
-        currentSound = Number(btn.dataset.sound);
-
+        currentAudio = {
+            file: currentSound = Number(btn.dataset.file),
+            sound: currentSound = Number(btn.dataset.sound),
+        }
+        console.log(currentAudio)
         // предпрослушивание
-        playFrom(sounds[currentSound].time, sounds[currentSound].dur, 0);
-    });
-});
-
-function playWallHit(side) {
-    const snd = sounds[currentSound];
-    if (!snd) return;
-
-    let pan = 0;
-    if (side === "left") pan = -1;
-    if (side === "right") pan = 1;
-
-    playFrom(snd.time, snd.dur, pan);
-}
+        playFrom(0);
+    })
+})
 
 
 // canvas
@@ -189,12 +226,13 @@ function animate() {
         ball.x += speed * 1.6 * dir;
         if (ball.x + ball.r >= canvas.width && dir > 0) {
             dir = -1;
-            playWallHit("right");
+            playFrom(1)
         }
 
         if (ball.x - ball.r <= 0 && dir < 0) {
             dir = 1;
-            playWallHit("left");
+            playFrom(-1)
+
         }
     }
 
@@ -203,12 +241,12 @@ function animate() {
         ball.y += speed * 1.6 * dir;
         if (ball.y + ball.r >= canvas.height && dir > 0) {
             dir = -1;
-            playWallHit("bottom");
+            playFrom();
         }
 
         if (ball.y - ball.r <= 0 && dir < 0) {
             dir = 1;
-            playWallHit("top");
+            playFrom();
         }
     }
 
@@ -235,8 +273,7 @@ function animate() {
 
         if (hit) {
             // проигрываем выбранный звук
-            const snd = sounds[currentSound];
-            if (snd) playFrom(snd.time, snd.dur, pan);
+            playFrom(pan)
         }
     }
 
@@ -252,9 +289,6 @@ function animate() {
         // лемниската
         ball.x = cx + a * Math.sin(time);
         ball.y = cy + b * Math.sin(time) * Math.cos(time);
-
-
-
     }
 
     // шарик

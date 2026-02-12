@@ -30,21 +30,9 @@
             inset: 0;
             z-index: 1;
             height: 100vh;
-            /* Полупрозрачная графитовая рамка */
-            /* border: 1px solid rgba(50, 50, 50, 0.5); */
-
-            /* Внутренние и внешние тени */
-            /* box-shadow: */
-            /* 0 4px 10px rgba(0, 0, 0, 0.3), */
-            /* внешняя тень */
-            /* inset 0 0 8px rgba(50, 50, 50, 0.2); */
-            /* внутренняя мягкая подсветка */
-
-            /* border-radius: 12px; */
-            /* скруглённые углы */
         }
 
-        /* контейнер меню */
+        /* контейнер меню сверху */
         .top-overlay {
             position: fixed;
             top: 0;
@@ -53,7 +41,7 @@
             z-index: 10;
         }
 
-        /* ручка */
+        /* ручка сверху */
         .overlay-handle {
             width: 120px;
             height: 6px;
@@ -66,7 +54,7 @@
                 box-shadow 0.25s ease;
         }
 
-        /* меню */
+        /* меню сверху */
         .overlay-menu {
             margin-top: 6px;
             padding: 14px;
@@ -80,8 +68,51 @@
             transition: opacity 0.25s ease, transform 0.25s ease;
         }
 
-        /* показать при наведении */
+        /* показать при наведении сверху */
         .top-overlay:hover .overlay-menu {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* контейнер меню снизу */
+        .bottom-overlay {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        /* ручка снизу */
+        .bottom-overlay .overlay-handle {
+            width: 120px;
+            height: 6px;
+            margin: 0 auto 6px;
+            background: rgba(26, 25, 25, 0.25);
+            border-radius: 999px;
+            backdrop-filter: blur(6px);
+            transition:
+                background 0.25s ease,
+                box-shadow 0.25s ease;
+        }
+
+        /* меню снизу */
+        .bottom-overlay .overlay-menu {
+            margin-bottom: 6px;
+            padding: 14px;
+            background: rgba(40, 40, 40, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        /* показать при наведении снизу */
+        .bottom-overlay:hover .overlay-menu {
             opacity: 1;
             transform: translateY(0);
             pointer-events: auto;
@@ -165,6 +196,73 @@
             -webkit-appearance: none;
             appearance: none;
         }
+
+
+        .sound-pad {
+            display: grid;
+            grid-template-columns: repeat(9, 44px);
+            gap: 7px;
+            margin-top: 12px;
+        }
+
+        .sound-pad:first-child {
+            margin-top: 0;
+        }
+
+        .pad {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+
+            background: rgba(60, 60, 60, 0.65);
+            backdrop-filter: blur(6px);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: #ddd;
+            font-size: 14px;
+            font-weight: 500;
+
+            cursor: pointer;
+            user-select: none;
+
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+                0 4px 10px rgba(0, 0, 0, 0.4);
+
+            transition:
+                transform 0.12s ease,
+                box-shadow 0.12s ease,
+                background 0.12s ease;
+        }
+
+        .pad:hover {
+            background: rgba(80, 80, 80, 0.8);
+            transform: translateY(-1px);
+        }
+
+        .pad:active {
+            transform: translateY(1px);
+            box-shadow:
+                inset 0 4px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        .pad.active {
+            background: rgba(120, 120, 120, 0.9);
+            color: #fff;
+
+            box-shadow:
+                0 0 0 1px rgba(255, 255, 255, 0.2),
+                0 0 16px rgba(255, 255, 255, 0.15);
+        }
+
+        .sound-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
     </style>
 </head>
 
@@ -173,10 +271,9 @@
         <canvas id="canvas"></canvas>
     </div>
 
+    <!-- Верхний оверлей с управлением движением -->
     <div class="top-overlay">
-
-        <div class="overlay-handle">
-        </div>
+        <div class="overlay-handle"></div>
         <div class="overlay-menu">
             <div class="controls">
                 <div class="control-buttons">
@@ -233,7 +330,6 @@
                     </div>
                 </div>
                 <div class="speed-control">
-
                     <label for="speed" class="form-label"></label>
                     <input type="range" class="form-range" min="5" max="45" step="1" id="speed" value="25">
                 </div>
@@ -241,25 +337,63 @@
                     <div class="color-preview" id="colorPreview"></div>
                     <input type="color" id="ballColor" value="#ff0000">
                 </div>
-
-                <div class="mt-3">
-                    <div class="btn-group flex-wrap" role="group" aria-label="Sound pad">
-                        <button type="button" class="btn btn-outline-light active" data-sound="-1">🔇</button>
-                        <button type="button" class="btn btn-outline-light" data-sound="0">1</button>
-                        <button type="button" class="btn btn-outline-light" data-sound="1">2</button>
-                        <button type="button" class="btn btn-outline-light" data-sound="2">3</button>
-                        <button type="button" class="btn btn-outline-light" data-sound="3">4</button>
-                        <button type="button" class="btn btn-outline-light" data-sound="4">5</button>
-                        <button type="button" class="btn btn-outline-light" data-sound="5">6</button>
-                        <button type="button" class="btn btn-outline-light" data-sound="6">7</button>
-                        <button type="button" class="btn btn-outline-light" data-sound="7">8</button>
-                    </div>
-                </div>
-
             </div>
         </div>
-
     </div>
+
+    <!-- Нижний оверлей со звуками -->
+    <div class="bottom-overlay">
+        <div class="overlay-menu">
+            <div class="sound-controls">
+                <div class="sound-pad">
+                    <div class="pad active" data-file="0" data-sound="-1">
+<svg width="800px" height="800px" viewBox="-4 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="icomoon-ignore">
+</g>
+<path d="M24.3 4.592l-0.742-0.742-7.142 7.143v-5.822l-7.687 6.127h-5.949v4.743l-0.003 0.003 0.003 0.003v4.693h3.889l-6.668 6.668 0.742 0.742 7.41-7.41h0.027l1.003-1.002-0.015-0.012 6.202-6.202v0.027l1.049-1.049v-0.027l7.883-7.883zM3.828 19.691v-7.343h5.268l6.271-4.998v3.949l0.001 0.743-7.65 7.649h-3.889z" fill="#000000">
+
+</path>
+<path d="M15.368 19.691h-0.001v4.901l-5.355-4.202-0.747 0.747 7.151 5.611v-6.008h0.001v-6.755l-1.049 1.049z" fill="#000000">
+
+</path>
+</svg>
+                    </div>
+                </div>
+                <div class="sound-pad">
+                    <div class="pad" data-file="0" data-sound="0">1</div>
+                    <div class="pad" data-file="0" data-sound="1">2</div>
+                    <div class="pad" data-file="0" data-sound="2">3</div>
+                    <div class="pad" data-file="0" data-sound="3">4</div>
+                    <div class="pad" data-file="0" data-sound="4">5</div>
+                    <div class="pad" data-file="0" data-sound="5">6</div>
+                    <div class="pad" data-file="0" data-sound="6">7</div>
+                    <div class="pad" data-file="0" data-sound="7">8</div>
+                </div>
+                <div class="sound-pad">
+                    <div class="pad" data-file="1" data-sound="0">1</div>
+                    <div class="pad" data-file="1" data-sound="1">2</div>
+                    <div class="pad" data-file="1" data-sound="2">3</div>
+                    <div class="pad" data-file="1" data-sound="3">4</div>
+                    <div class="pad" data-file="1" data-sound="4">5</div>
+                    <div class="pad" data-file="1" data-sound="5">6</div>
+                    <div class="pad" data-file="1" data-sound="6">7</div>
+                    <div class="pad" data-file="1" data-sound="7">8</div>
+                    <div class="pad" data-file="1" data-sound="8">9</div>
+                </div>
+                <div class="sound-pad">
+                    <div class="pad" data-file="2" data-sound="0">1</div>
+                    <div class="pad" data-file="2" data-sound="1">2</div>
+                    <div class="pad" data-file="2" data-sound="2">3</div>
+                    <div class="pad" data-file="2" data-sound="3">4</div>
+                    <div class="pad" data-file="2" data-sound="4">5</div>
+                    <div class="pad" data-file="2" data-sound="5">6</div>
+                    <div class="pad" data-file="2" data-sound="6">7</div>
+                </div>
+            </div>
+        </div>
+        <div class="overlay-handle"></div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 
