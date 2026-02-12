@@ -9,261 +9,7 @@
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
     <title>EMDR Helper</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f0ebeb;
-        }
-
-        .canvas-wrapper {
-            margin-top: 250px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        canvas {
-            width: 100vw;
-            position: fixed;
-            inset: 0;
-            z-index: 1;
-            height: 100vh;
-        }
-
-        /* контейнер меню сверху */
-        .top-overlay {
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-        }
-
-        /* ручка сверху */
-        .overlay-handle {
-            width: 120px;
-            height: 6px;
-            margin: 6px auto 0;
-            background: rgba(26, 25, 25, 0.25);
-            border-radius: 999px;
-            backdrop-filter: blur(6px);
-            transition:
-                background 0.25s ease,
-                box-shadow 0.25s ease;
-        }
-
-        /* меню сверху */
-        .overlay-menu {
-            margin-top: 6px;
-            padding: 14px;
-            background: rgba(40, 40, 40, 0.75);
-            backdrop-filter: blur(12px);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            opacity: 0;
-            transform: translateY(-10px);
-            pointer-events: none;
-            transition: opacity 0.25s ease, transform 0.25s ease;
-        }
-
-        /* показать при наведении сверху */
-        .top-overlay:hover .overlay-menu {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-
-        /* контейнер меню снизу */
-        .bottom-overlay {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-        }
-
-        /* ручка снизу */
-        .bottom-overlay .overlay-handle {
-            width: 120px;
-            height: 6px;
-            margin: 0 auto 6px;
-            background: rgba(26, 25, 25, 0.25);
-            border-radius: 999px;
-            backdrop-filter: blur(6px);
-            transition:
-                background 0.25s ease,
-                box-shadow 0.25s ease;
-        }
-
-        /* меню снизу */
-        .bottom-overlay .overlay-menu {
-            margin-bottom: 6px;
-            padding: 14px;
-            background: rgba(40, 40, 40, 0.75);
-            backdrop-filter: blur(12px);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            opacity: 0;
-            transform: translateY(10px);
-            pointer-events: none;
-            transition: opacity 0.25s ease, transform 0.25s ease;
-        }
-
-        /* показать при наведении снизу */
-        .bottom-overlay:hover .overlay-menu {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-
-        .controls {
-            align-items: center;
-            justify-content: center;
-            display: flex;
-            flex-direction: column;
-            margin-top: 10px;
-            gap: 20px;
-        }
-
-        .control-buttons {
-            display: flex;
-        }
-
-        .control-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 60px;
-            height: 60px;
-            margin: 6px;
-            background: #f5f5f5;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .control-button:hover {
-            background: #e0e0e0;
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-        }
-
-        .control-button svg {
-            width: 30px;
-            height: 30px;
-        }
-
-        .form-range {
-            width: 300px;
-        }
-
-        #horizontal {
-            svg {
-                transform: rotate(-90deg)
-            }
-        }
-
-        /* контейнер */
-        #colorBtn {
-            position: relative;
-        }
-
-        /* визуальный квадрат */
-        .color-preview {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            background: #ff0000;
-            pointer-events: none;
-        }
-
-        /* 🔥 ПОЛНОЕ ПЕРЕОПРЕДЕЛЕНИЕ bootstrap */
-        #colorBtn input[type="color"] {
-            all: unset;
-
-            position: absolute;
-            inset: 0;
-
-            width: 100%;
-            height: 100%;
-
-            cursor: pointer;
-            opacity: 0;
-
-            -webkit-appearance: none;
-            appearance: none;
-        }
-
-
-        .sound-pad {
-            display: grid;
-            grid-template-columns: repeat(9, 44px);
-            gap: 7px;
-            margin-top: 12px;
-        }
-
-        .sound-pad:first-child {
-            margin-top: 0;
-        }
-
-        .pad {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-
-            background: rgba(60, 60, 60, 0.65);
-            backdrop-filter: blur(6px);
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            color: #ddd;
-            font-size: 14px;
-            font-weight: 500;
-
-            cursor: pointer;
-            user-select: none;
-
-            box-shadow:
-                inset 0 0 0 1px rgba(255, 255, 255, 0.05),
-                0 4px 10px rgba(0, 0, 0, 0.4);
-
-            transition:
-                transform 0.12s ease,
-                box-shadow 0.12s ease,
-                background 0.12s ease;
-        }
-
-        .pad:hover {
-            background: rgba(80, 80, 80, 0.8);
-            transform: translateY(-1px);
-        }
-
-        .pad:active {
-            transform: translateY(1px);
-            box-shadow:
-                inset 0 4px 8px rgba(0, 0, 0, 0.6);
-        }
-
-        .pad.active {
-            background: rgba(120, 120, 120, 0.9);
-            color: #fff;
-
-            box-shadow:
-                0 0 0 1px rgba(255, 255, 255, 0.2),
-                0 0 16px rgba(255, 255, 255, 0.15);
-        }
-
-        .sound-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css?v=0.1.0">
 </head>
 
 <body>
@@ -341,23 +87,15 @@
         </div>
     </div>
 
+    <!-- Бейдж версии -->
+    <div class="version-badge">v0.1.0</div>
+
     <!-- Нижний оверлей со звуками -->
     <div class="bottom-overlay">
         <div class="overlay-menu">
             <div class="sound-controls">
                 <div class="sound-pad">
-                    <div class="pad active" data-file="0" data-sound="-1">
-<svg width="800px" height="800px" viewBox="-4 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<g id="icomoon-ignore">
-</g>
-<path d="M24.3 4.592l-0.742-0.742-7.142 7.143v-5.822l-7.687 6.127h-5.949v4.743l-0.003 0.003 0.003 0.003v4.693h3.889l-6.668 6.668 0.742 0.742 7.41-7.41h0.027l1.003-1.002-0.015-0.012 6.202-6.202v0.027l1.049-1.049v-0.027l7.883-7.883zM3.828 19.691v-7.343h5.268l6.271-4.998v3.949l0.001 0.743-7.65 7.649h-3.889z" fill="#000000">
-
-</path>
-<path d="M15.368 19.691h-0.001v4.901l-5.355-4.202-0.747 0.747 7.151 5.611v-6.008h0.001v-6.755l-1.049 1.049z" fill="#000000">
-
-</path>
-</svg>
-                    </div>
+                    <div class="pad active" data-file="0" data-sound="-1">🔇</div>
                 </div>
                 <div class="sound-pad">
                     <div class="pad" data-file="0" data-sound="0">1</div>
@@ -394,7 +132,7 @@
         <div class="overlay-handle"></div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=0.1.0"></script>
 </body>
 
 </html>
