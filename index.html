@@ -134,6 +134,37 @@
                 transform: rotate(-90deg)
             }
         }
+
+        /* контейнер */
+        #colorBtn {
+            position: relative;
+        }
+
+        /* визуальный квадрат */
+        .color-preview {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: #ff0000;
+            pointer-events: none;
+        }
+
+        /* 🔥 ПОЛНОЕ ПЕРЕОПРЕДЕЛЕНИЕ bootstrap */
+        #colorBtn input[type="color"] {
+            all: unset;
+
+            position: absolute;
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            cursor: pointer;
+            opacity: 0;
+
+            -webkit-appearance: none;
+            appearance: none;
+        }
     </style>
 </head>
 
@@ -149,6 +180,15 @@
         <div class="overlay-menu">
             <div class="controls">
                 <div class="control-buttons">
+                    <div class="control-button" id="stop">
+                        <svg width="800px" height="800px" viewBox="0 0 24 24" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M4 18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12z"
+                                fill="#000000" />
+                        </svg>
+                    </div>
+
                     <div class="control-button" id="horizontal">
                         <svg fill="#000000" width="800px" height="800px" viewBox="0 0 256 256"
                             xmlns="http://www.w3.org/2000/svg">
@@ -195,8 +235,13 @@
                 <div class="speed-control">
 
                     <label for="speed" class="form-label"></label>
-                    <input type="range" class="form-range" min="2" max="20" step="1" id="speed">
+                    <input type="range" class="form-range" min="1" max="40" step="1" id="speed">
                 </div>
+                <div class="control-button" id="colorBtn">
+                    <div class="color-preview" id="colorPreview"></div>
+                    <input type="color" id="ballColor" value="#ff0000">
+                </div>
+
                 <div class="mt-3">
                     <div class="btn-group flex-wrap" role="group" aria-label="Sound pad">
                         <button type="button" class="btn btn-outline-light active" data-sound="-1">🔇</button>
@@ -216,6 +261,12 @@
 
     </div>
     <script>
+        //color
+        const colorInput = document.getElementById("ballColor");
+        const colorPreview = document.getElementById("colorPreview");
+
+        let ballColor = colorInput.value;
+
         //audio
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -295,8 +346,9 @@
         };
 
         // -------- СОСТОЯНИЕ --------
-        let mode = "horizontal";
-        let speed = 10;
+        let mode = "stop";
+        let stopping = true;
+        let speed = 20;
 
         // для прямых
         let dir = 1;
@@ -310,9 +362,34 @@
         // для восьмёрки
         let time = 0;
 
+
+        function moveToCenterSmooth() {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            const dx = cx - ball.x;
+            const dy = cy - ball.y;
+
+            // коэффициент плавности
+            ball.x += dx * 0.05;
+            ball.y += dy * 0.05;
+
+            // когда почти в центре — фиксируем
+            if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
+                ball.x = cx;
+                ball.y = cy;
+                stopping = false;
+            }
+        }
+
         // -------- РЕЖИМЫ --------
+        function setStop() {
+            mode = "stop";
+            stopping = true;
+        }
 
         function setHorizontal() {
+            stopping = false;
             mode = "horizontal";
             ball.x = ball.r;
             ball.y = canvas.height / 2;
@@ -320,6 +397,7 @@
         }
 
         function setVertical() {
+            stopping = false;
             mode = "vertical";
             ball.x = canvas.width / 2;
             ball.y = ball.r;
@@ -327,6 +405,7 @@
         }
 
         function setDiagonalLeftTop() {
+            stopping = false;
             mode = "diagonal";
             t = 0;
             tDir = 1;
@@ -339,6 +418,7 @@
         }
 
         function setDiagonalRightTop() {
+            stopping = false;
             mode = "diagonal";
             t = 0;
             tDir = 1;
@@ -351,6 +431,7 @@
         }
 
         function setEight() {
+            stopping = false;
             mode = "eight";
             time = 0;
         }
@@ -359,6 +440,13 @@
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (mode === "stop") {
+                if (stopping) {
+                    moveToCenterSmooth();
+                }
+            }
+
 
             if (mode === "horizontal") {
                 ball.x += speed * dir;
@@ -430,37 +518,19 @@
 
 
 
-                // if (mode === "eight") {
-                //     time += speed * 0.0035;
-
-                //     const cx = canvas.width / 2;
-                //     const cy = canvas.height / 2;
-                //     const a = canvas.width / 2 - ball.r;
-                //     const b = canvas.height / 2 - ball.r;
-
-                //     const prevX = ball.x;
-
-                //     ball.x = cx + a * Math.sin(time);
-                //     ball.y = cy + b * Math.sin(time) * Math.cos(time);
-
-                //     // пересечение центра — лёгкий клик
-                //     if ((prevX < cx && ball.x >= cx) || (prevX > cx && ball.x <= cx)) {
-                //         playFrom(4.0, 0.12, 0);
-                //     }
-                // }
-
             }
 
             // шарик
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
-            ctx.fillStyle = "red";
+            ctx.fillStyle = ballColor;
             ctx.fill();
 
             requestAnimationFrame(animate);
         }
 
         // -------- КОНТРОЛЛЫ --------
+        document.getElementById("stop").onclick = setStop;
 
         document.getElementById("horizontal").onclick = setHorizontal;
         document.getElementById("vertical").onclick = setVertical;
@@ -472,8 +542,13 @@
             speed = Number(e.target.value);
         };
 
+        colorInput.addEventListener("input", e => {
+            ballColor = e.target.value;
+            colorPreview.style.background = ballColor;
+        });
+
         // старт
-        setHorizontal();
+        setStop();
         animate();
 
     </script>
