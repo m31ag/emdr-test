@@ -235,7 +235,7 @@
                 <div class="speed-control">
 
                     <label for="speed" class="form-label"></label>
-                    <input type="range" class="form-range" min="1" max="40" step="1" id="speed">
+                    <input type="range" class="form-range" min="5" max="45" step="1" id="speed" value="25">
                 </div>
                 <div class="control-button" id="colorBtn">
                     <div class="color-preview" id="colorPreview"></div>
@@ -348,7 +348,7 @@
         // -------- СОСТОЯНИЕ --------
         let mode = "stop";
         let stopping = true;
-        let speed = 20;
+        let speed = Number(document.getElementById("speed").value); // стартовая скорость = 23
 
         // для прямых
         let dir = 1;
@@ -449,7 +449,7 @@
 
 
             if (mode === "horizontal") {
-                ball.x += speed * dir;
+                ball.x += speed*1.3 * dir;
                 if (ball.x + ball.r >= canvas.width && dir > 0) {
                     dir = -1;
                     playWallHit("right");
@@ -463,7 +463,7 @@
 
             if (mode === "vertical") {
 
-                ball.y += speed * dir;
+                ball.y += speed*1.3 * dir;
                 if (ball.y + ball.r >= canvas.height && dir > 0) {
                     dir = -1;
                     playWallHit("bottom");
@@ -476,7 +476,7 @@
             }
 
             if (mode === "diagonal") {
-                t += (speed / 1000) * tDir;
+                t += (speed / 800) * tDir;
 
                 // пересчитываем текущие координаты
                 ball.x = start.x + (end.x - start.x) * t;
